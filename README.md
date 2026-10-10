@@ -1,34 +1,39 @@
-<div align="center">
+# ResumeFill AI
 
-# 📄 ResumeFill AI
+**Privacy-first résumé extraction and job application autofill — entirely in the browser.**
 
-### Upload once. Review once. Reuse your résumé data wherever you apply.
+ResumeFill AI converts a text-based PDF résumé into a structured, editable profile. The web app runs as static HTML/CSS/JavaScript: the résumé is read locally in the browser and is not uploaded to a ResumeFill AI backend. After review, users can export JSON for the companion Chrome extension or CSV for their own records.
 
-A privacy-first, open-source résumé information extractor and job-application autofill assistant built with **Python, Streamlit and a Chrome extension**.
+## Live app
 
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-4285F4?logo=googlechrome&logoColor=white)](extension/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+**Canonical app:** https://koshymammoottillmathew.github.io/products/resumefill-ai/
 
-</div>
-
----
+The application is published as part of Koshy's GitHub Pages site under the **Products** category. This repository remains the source repository for ResumeFill AI.
 
 ## Why ResumeFill AI?
 
-Job applications repeatedly ask for information already present in your résumé. ResumeFill AI turns a résumé into a **reviewable, reusable profile** and lets the user decide where that information is reused.
+Repeatedly entering the same contact details, skills, education and work history into job forms is slow and error-prone. ResumeFill AI creates one verified profile that can be reused while keeping the applicant in control.
 
-The project deliberately separates extraction from autofill:
+## Privacy by design
+
+- PDF parsing happens in the browser.
+- There is no ResumeFill AI application server or résumé database.
+- The app does not intentionally upload or persist the selected PDF.
+- Exported files are created locally in the browser.
+- The Chrome extension stores an imported profile in `chrome.storage.local`.
+- The extension never auto-submits a job application.
+- The app loads the pinned PDF.js library from a public CDN; the résumé itself is provided directly to PDF.js in the browser.
+
+## Browser app flow
 
 ```text
 PDF résumé
     ↓
-Text extraction
+Browser-side PDF.js text extraction
     ↓
-Structured profile
+Deterministic JavaScript résumé parser
     ↓
-User review & correction
+User review and correction
     ↓
 JSON / CSV export
     ↓
@@ -37,159 +42,109 @@ Chrome extension
 Supported job-form fields
 ```
 
-**The user remains in control.** ResumeFill AI does not automatically submit applications and does not invent sensitive answers.
-
-## ✨ MVP Features
-
-- Upload a text-based PDF résumé
-- Extract common contact information, links, skills and résumé sections
-- Review and edit extracted information before export
-- Export a documented JSON profile for reuse
-- Export a flattened CSV profile
-- Import the JSON profile into the included Chrome extension
-- Fill common empty job-form fields such as name, email, phone, location and professional links
-- Highlight fields filled by the extension so they are easy to review
-- Keep the extension profile in Chrome's local extension storage
-- No paid AI API required
-
-> **MVP limitation:** résumé layouts vary enormously. The current extractor uses deterministic parsing and is intentionally conservative. OCR, stronger layout understanding and smarter extraction are planned improvements.
-
-## 🔐 Privacy by Design
-
-Résumé data is personal information, so privacy is a product requirement rather than an afterthought.
-
-- The local Streamlit app processes uploaded PDFs in memory.
-- The application does not intentionally persist uploaded résumé files.
-- The Chrome extension stores the imported profile in `chrome.storage.local`.
-- There is no ResumeFill AI account or cloud profile database in this MVP.
-- Real résumés, exported profiles, secrets and environment files are excluded from Git.
-- The extension fills fields only when the user clicks **Fill this page**.
-- It never clicks a job application's submit button.
-
-If this app is deployed to a public Streamlit host, the PDF is necessarily processed by that hosting environment during the session. Users should use the local version when they require device-only résumé processing.
-
-## 🧱 Repository Structure
+## Repository structure
 
 ```text
 ResumeFillAI/
-├── app.py
-├── src/
-│   ├── __init__.py
-│   ├── pdf_parser.py
-│   ├── extractor.py
-│   ├── schemas.py
-│   └── exporter.py
+├── index.html
+├── styles.css
+├── js/
+│   ├── app.js
+│   ├── pdf-parser.js
+│   ├── extractor.js
+│   └── exporter.js
 ├── extension/
 │   ├── manifest.json
 │   ├── popup.html
 │   ├── popup.js
 │   ├── content.js
 │   └── styles.css
-├── tests/
-│   ├── test_extractor.py
-│   └── test_exporter.py
-├── .streamlit/
-│   └── config.toml
-├── requirements.txt
-├── requirements-dev.txt
-├── .gitignore
 ├── LICENSE
 └── README.md
 ```
 
-## 🚀 Run the Web App Locally
+## Current MVP
 
-```bash
-git clone https://github.com/KoshyMammoottillMathew/ResumeFillAI.git
-cd ResumeFillAI
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-streamlit run app.py
-```
+- Drag-and-drop or choose a PDF résumé
+- Browser-side PDF text extraction
+- 10 MB / 25-page guardrails
+- Structured profile schema v1.0
+- Editable contact details and summary
+- Editable work experience and education
+- Add/remove repeatable experience, education and project records
+- Editable skills and certifications
+- JSON and CSV export
+- Chrome extension JSON import
+- Common job-form contact field autofill
+- No auto-submit
 
-On Windows, activate the virtual environment with `.venv\\Scripts\\activate`.
-
-## 🧩 Load the Chrome Extension
-
-1. Run ResumeFill AI and export your verified **JSON profile**.
-2. Open Chrome and go to `chrome://extensions`.
-3. Enable **Developer mode**.
-4. Select **Load unpacked**.
-5. Choose this repository's `extension` folder.
-6. Open the ResumeFill AI extension and import the JSON profile.
-7. Visit a job-application form and click **Fill this page**.
-8. Review every populated field before submitting the form yourself.
-
-The extension is intentionally generic. Complex custom controls and some job portals will require site-specific adapters in later versions.
-
-## 🧾 Profile Schema
-
-The web app and extension communicate through a versioned JSON profile. Core fields include:
+## Profile schema
 
 ```json
 {
   "schema_version": "1.0",
-  "full_name": "Jane Example",
-  "email": "jane@example.com",
-  "phone": "+1 555 123 4567",
+  "full_name": "",
+  "email": "",
+  "phone": "",
   "location": "",
-  "linkedin": "https://linkedin.com/in/jane-example",
+  "linkedin": "",
   "github": "",
   "portfolio": "",
   "summary": "",
   "experience": [],
   "education": [],
-  "skills": ["Python", "SQL"],
+  "skills": [],
   "projects": [],
   "certifications": []
 }
 ```
 
-Fields not found in the résumé remain blank rather than being guessed.
+## Chrome extension testing
 
-## 🧪 Tests
+1. Download or clone this repository.
+2. Open `chrome://extensions`.
+3. Enable **Developer mode**.
+4. Choose **Load unpacked** and select the `extension` directory.
+5. Export a verified JSON profile from the web app.
+6. Import that JSON in the extension.
+7. Open a job application page and choose **Fill this page**.
+8. Review every filled field before submitting anything yourself.
 
-```bash
-pip install -r requirements-dev.txt
-pytest -q
-```
+## Limitations
 
-Tests use synthetic data only.
+- The current PDF extractor targets text-based PDFs; scanned/image-only PDFs need OCR and are not yet supported.
+- Résumé layouts vary widely, so extracted fields must always be reviewed.
+- The extension currently focuses on common text inputs and textareas; complex ATS widgets, selects, radios and checkboxes need dedicated support.
+- ResumeFill AI is an assistive autofill tool, not an autonomous application bot.
 
-## 🗺️ Roadmap
+## Roadmap
 
-- [x] PDF upload and text extraction
+- [x] Browser-native PDF extraction
 - [x] Structured profile schema
-- [x] Editable Streamlit profile
+- [x] Editable profile review
+- [x] Add/remove repeatable records
 - [x] JSON and CSV export
 - [x] Chrome extension profile import
 - [x] Common contact-field autofill
-- [ ] Better work-history and education parsing
-- [ ] Add/remove repeatable records directly in the UI
-- [ ] Dropdown, radio and checkbox matching
+- [ ] Stronger multi-layout résumé parsing
 - [ ] OCR for scanned/image-only PDFs
-- [ ] Site adapters for common applicant-tracking systems
-- [ ] Optional secure sync architecture
-- [ ] Public hosted demo after privacy/deployment review
+- [ ] Dropdown, radio and checkbox matching
+- [ ] Preview/confidence layer before autofill
+- [ ] ATS-specific adapters
+- [ ] Automated browser tests
 
-## ⚠️ Responsible Use
+## Responsible use
 
-ResumeFill AI is an assistive autofill tool. Users are responsible for reviewing the information entered into application forms and for complying with the terms and requirements of websites they use. The project intentionally avoids automatic application submission.
+ResumeFill AI is designed to reduce repetitive typing. Users remain responsible for verifying extracted information, reviewing autofilled fields, answering employer-specific questions themselves, and manually submitting each application.
 
-## 🤝 Contributing
+## License
 
-Contributions, bug reports and suggestions are welcome. Please avoid attaching real résumés or personal information to public issues. Synthetic examples are preferred for bug reports.
+MIT License. See [LICENSE](LICENSE).
 
-## 📜 License
+## Author
 
-Released under the [MIT License](LICENSE).
+**Koshy Mammoottill Mathew**
 
----
-
-<div align="center">
-
-Built by **Koshy Mammoottill Mathew**  
-[Portfolio](https://koshymammoottillmathew.github.io/) · [LinkedIn](https://www.linkedin.com/in/koshymammoottillmathew/) · [GitHub](https://github.com/KoshyMammoottillMathew)
-
-</div>
+- Portfolio: https://koshymammoottillmathew.github.io/
+- LinkedIn: https://www.linkedin.com/in/koshymammoottillmathew/
+- GitHub: https://github.com/KoshyMammoottillMathew

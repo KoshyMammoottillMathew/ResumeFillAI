@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="ResumeFill AI extracts reusable resume information locally in your browser and exports it for job application autofill.">
+  <meta name="theme-color" content="#315efb">
+  <title>ResumeFill AI — Private résumé extraction</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="ResumeFill AI home"><span class="brand-mark">R</span><span>ResumeFill <b>AI</b></span></a>
+    <div class="privacy-pill"><span class="privacy-dot"></span>Your résumé stays in this browser</div>
+  </header>
+
+  <main class="shell">
+    <section class="hero" id="uploadView">
+      <div class="eyebrow">PRIVACY-FIRST CAREER TOOL</div>
+      <h1>Upload once. Review once.<br><span>Reuse wherever you apply.</span></h1>
+      <p class="hero-copy">ResumeFill AI turns a text-based PDF résumé into a structured profile you control. Processing happens locally in your browser.</p>
+
+      <label class="dropzone" id="dropzone" for="resumeFile">
+        <input id="resumeFile" type="file" accept="application/pdf,.pdf" hidden>
+        <div class="upload-icon">↑</div>
+        <strong>Drop your résumé here</strong>
+        <span>or click to choose a PDF</span>
+        <small>Text-based PDF · Maximum 10 MB · Nothing is uploaded by ResumeFill AI</small>
+      </label>
+      <div id="uploadStatus" class="status" role="status" aria-live="polite"></div>
+
+      <div class="trust-grid">
+        <article><span>01</span><h3>Local processing</h3><p>Your PDF is read in your browser, not sent to a ResumeFill server.</p></article>
+        <article><span>02</span><h3>You stay in control</h3><p>Review and correct every extracted field before exporting anything.</p></article>
+        <article><span>03</span><h3>No auto-submit</h3><p>The companion extension fills supported fields but never submits applications.</p></article>
+      </div>
+    </section>
+
+    <section class="workspace hidden" id="workspace">
+      <div class="workspace-head">
+        <div><div class="eyebrow">EXTRACTED PROFILE</div><h1>Review your information</h1><p>Extraction can make mistakes. Verify every field before export.</p></div>
+        <button class="button secondary" id="newResumeBtn" type="button">Use another résumé</button>
+      </div>
+
+      <nav class="tabs" aria-label="Profile sections">
+        <button class="tab active" data-tab="contact" type="button">Contact</button>
+        <button class="tab" data-tab="experience" type="button">Experience</button>
+        <button class="tab" data-tab="education" type="button">Education</button>
+        <button class="tab" data-tab="skills" type="button">Skills</button>
+        <button class="tab" data-tab="projects" type="button">Projects & more</button>
+      </nav>
+
+      <form id="profileForm" autocomplete="off">
+        <section class="panel tab-panel" data-panel="contact">
+          <div class="form-grid">
+            <label>Full name<input name="full_name" type="text"></label>
+            <label>Email<input name="email" type="email"></label>
+            <label>Phone<input name="phone" type="text"></label>
+            <label>Location<input name="location" type="text"></label>
+            <label>LinkedIn<input name="linkedin" type="url"></label>
+            <label>GitHub<input name="github" type="url"></label>
+            <label class="wide">Portfolio / website<input name="portfolio" type="url"></label>
+            <label class="wide">Professional summary<textarea name="summary" rows="5"></textarea></label>
+          </div>
+        </section>
+
+        <section class="panel tab-panel hidden" data-panel="experience"><div id="experienceList"></div><button class="button add" data-add="experience" type="button">+ Add experience</button></section>
+        <section class="panel tab-panel hidden" data-panel="education"><div id="educationList"></div><button class="button add" data-add="education" type="button">+ Add education</button></section>
+        <section class="panel tab-panel hidden" data-panel="skills"><label>Skills <span class="hint">One per line</span><textarea id="skillsInput" rows="14"></textarea></label></section>
+        <section class="panel tab-panel hidden" data-panel="projects"><div id="projectsList"></div><button class="button add" data-add="projects" type="button">+ Add project</button><hr><label>Certifications <span class="hint">One per line</span><textarea id="certificationsInput" rows="8"></textarea></label></section>
+      </form>
+
+      <section class="export-card">
+        <div><div class="eyebrow">READY WHEN YOU ARE</div><h2>Export your verified profile</h2><p>JSON works with the ResumeFill AI Chrome extension. CSV gives you a portable copy.</p></div>
+        <div class="export-actions"><button class="button primary" id="downloadJson" type="button">Download JSON</button><button class="button secondary" id="downloadCsv" type="button">Download CSV</button></div>
+      </section>
+    </section>
+  </main>
+
+  <footer><span>ResumeFill AI · Open source · Privacy first</span><a href="https://github.com/KoshyMammoottillMathew/ResumeFillAI" target="_blank" rel="noreferrer">View source on GitHub ↗</a></footer>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
