@@ -1,0 +1,6 @@
+const file=document.getElementById('profileFile');const fill=document.getElementById('fill');const clear=document.getElementById('clear');const status=document.getElementById('status');
+function show(p){if(p){status.textContent=`Profile loaded: ${p.full_name||'Unnamed profile'}`;fill.disabled=false}else{status.textContent='No profile loaded.';fill.disabled=true}}
+chrome.storage.local.get(['resumeProfile'],r=>show(r.resumeProfile));
+file.addEventListener('change',async()=>{const f=file.files[0];if(!f)return;try{const p=JSON.parse(await f.text());if(!p||typeof p!=='object'||p.schema_version!=='1.0')throw new Error('Unsupported profile format');await chrome.storage.local.set({resumeProfile:p});show(p)}catch(e){status.textContent=`Could not import: ${e.message}`;fill.disabled=true}});
+fill.addEventListener('click',async()=>{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(!tab?.id)return;chrome.tabs.sendMessage(tab.id,{type:'RESUMEFILL_FILL'},r=>{if(chrome.runtime.lastError){status.textContent='This page cannot be filled.';return}status.textContent=`Filled ${r?.filled||0} field(s). Review before submitting.`})});
+clear.addEventListener('click',async()=>{await chrome.storage.local.remove('resumeProfile');show(null)});
