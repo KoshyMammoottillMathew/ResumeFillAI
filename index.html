@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="ResumeFill AI extracts reusable resume information locally in your browser and exports it for job application autofill.">
+  <meta name="description" content="ResumeFill AI extracts reusable resume information locally in your browser and includes an experimental Advanced OCR prototype for difficult and scanned résumés.">
   <meta name="theme-color" content="#315efb">
   <title>ResumeFill AI — Private résumé extraction</title>
   <link rel="stylesheet" href="./styles.css">
@@ -11,10 +11,15 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#" aria-label="ResumeFill AI home"><span class="brand-mark">R</span><span>ResumeFill <b>AI</b></span></a>
-    <div class="privacy-pill"><span class="privacy-dot"></span>Your résumé stays in this browser</div>
+    <div class="privacy-pill" id="privacyPill"><span class="privacy-dot"></span><span id="privacyText">Your résumé stays in this browser</span></div>
   </header>
 
   <main class="shell">
+    <nav class="mode-switch" id="modeSwitch" aria-label="ResumeFill processing modes">
+      <button class="mode-button active" data-mode="local" type="button"><span>Resume Extractor</span><small>Local · Browser only</small></button>
+      <button class="mode-button" data-mode="ocr" type="button"><span>Advanced OCR <b>PROTOTYPE</b></span><small>Experimental · Unlimited-OCR</small></button>
+    </nav>
+
     <section class="hero" id="uploadView">
       <div class="eyebrow">PRIVACY-FIRST CAREER TOOL</div>
       <h1>Upload once. Review once.<br><span>Reuse wherever you apply.</span></h1>
@@ -36,6 +41,60 @@
       </div>
     </section>
 
+    <section class="ocr-lab hidden" id="ocrView">
+      <div class="prototype-hero">
+        <div>
+          <div class="eyebrow">EXPERIMENTAL DOCUMENT INTELLIGENCE</div>
+          <div class="prototype-title-row"><h1>Advanced OCR</h1><span class="prototype-badge">PROTOTYPE</span></div>
+          <p>Explore next-generation document understanding for scanned, complex and multi-page résumés using <strong>Unlimited-OCR</strong> as the experimental OCR engine.</p>
+        </div>
+        <div class="model-chip"><span>Model experiment</span><strong>Baidu Unlimited-OCR</strong></div>
+      </div>
+
+      <div class="warning-card">
+        <strong>Experimental external processing</strong>
+        <p>The standard Resume Extractor remains browser-only. Unlimited-OCR requires a separate GPU inference environment and cannot run directly on GitHub Pages. The inference backend is not connected yet, so this lab currently lets you prepare and inspect a document without uploading it.</p>
+      </div>
+
+      <div class="ocr-grid">
+        <section class="ocr-card">
+          <div class="ocr-step">01 · DOCUMENT</div>
+          <h2>Prepare a difficult résumé</h2>
+          <p>Choose a scanned PDF, image résumé or complex layout to prepare for the prototype pipeline.</p>
+          <label class="prototype-dropzone" for="ocrFile">
+            <input id="ocrFile" type="file" accept="application/pdf,.pdf,image/png,image/jpeg,.png,.jpg,.jpeg" hidden>
+            <div class="upload-icon">⌁</div>
+            <strong>Choose a PDF or image</strong>
+            <span>PDF · PNG · JPG · Maximum 20 MB</span>
+          </label>
+          <div id="ocrFileInfo" class="file-info hidden"></div>
+        </section>
+
+        <section class="ocr-card">
+          <div class="ocr-step">02 · INFERENCE</div>
+          <h2>Unlimited-OCR prototype</h2>
+          <p>The planned inference adapter will send the selected document only after explicit consent, process it with Unlimited-OCR, and return structured document output.</p>
+          <div class="pipeline-list">
+            <div><span>1</span><p><strong>Document parsing</strong><small>Text, layout and page structure</small></p></div>
+            <div><span>2</span><p><strong>Résumé understanding</strong><small>Map content to ResumeFill fields</small></p></div>
+            <div><span>3</span><p><strong>Human verification</strong><small>Review before export or autofill</small></p></div>
+          </div>
+          <button class="button prototype-run" id="runOcrPrototype" type="button" disabled>Inference backend not connected</button>
+          <div id="ocrStatus" class="status compact" role="status" aria-live="polite">No document leaves your browser in the current prototype.</div>
+        </section>
+      </div>
+
+      <section class="prototype-scope">
+        <div><div class="eyebrow">WHY THIS LAB EXISTS</div><h2>Test before replacing what already works.</h2></div>
+        <div class="scope-grid">
+          <article><strong>Scanned résumés</strong><p>Evaluate OCR on image-only documents the local PDF.js extractor cannot currently read.</p></article>
+          <article><strong>Complex layouts</strong><p>Compare extraction on columns, tables and visually designed CVs.</p></article>
+          <article><strong>Measured results</strong><p>Accuracy claims will be added only after benchmark testing on representative documents.</p></article>
+        </div>
+        <p class="prototype-note">Unlimited-OCR is an experimental integration target, not the default ResumeFill AI processor. The local extractor remains the recommended privacy-first mode.</p>
+      </section>
+    </section>
+
     <section class="workspace hidden" id="workspace">
       <div class="workspace-head">
         <div><div class="eyebrow">EXTRACTED PROFILE</div><h1>Review your information</h1><p>Extraction can make mistakes. Verify every field before export.</p></div>
@@ -51,29 +110,16 @@
       </nav>
 
       <form id="profileForm" autocomplete="off">
-        <section class="panel tab-panel" data-panel="contact">
-          <div class="form-grid">
-            <label>Full name<input name="full_name" type="text"></label>
-            <label>Email<input name="email" type="email"></label>
-            <label>Phone<input name="phone" type="text"></label>
-            <label>Location<input name="location" type="text"></label>
-            <label>LinkedIn<input name="linkedin" type="url"></label>
-            <label>GitHub<input name="github" type="url"></label>
-            <label class="wide">Portfolio / website<input name="portfolio" type="url"></label>
-            <label class="wide">Professional summary<textarea name="summary" rows="5"></textarea></label>
-          </div>
-        </section>
-
+        <section class="panel tab-panel" data-panel="contact"><div class="form-grid">
+          <label>Full name<input name="full_name" type="text"></label><label>Email<input name="email" type="email"></label><label>Phone<input name="phone" type="text"></label><label>Location<input name="location" type="text"></label><label>LinkedIn<input name="linkedin" type="url"></label><label>GitHub<input name="github" type="url"></label><label class="wide">Portfolio / website<input name="portfolio" type="url"></label><label class="wide">Professional summary<textarea name="summary" rows="5"></textarea></label>
+        </div></section>
         <section class="panel tab-panel hidden" data-panel="experience"><div id="experienceList"></div><button class="button add" data-add="experience" type="button">+ Add experience</button></section>
         <section class="panel tab-panel hidden" data-panel="education"><div id="educationList"></div><button class="button add" data-add="education" type="button">+ Add education</button></section>
         <section class="panel tab-panel hidden" data-panel="skills"><label>Skills <span class="hint">One per line</span><textarea id="skillsInput" rows="14"></textarea></label></section>
         <section class="panel tab-panel hidden" data-panel="projects"><div id="projectsList"></div><button class="button add" data-add="projects" type="button">+ Add project</button><hr><label>Certifications <span class="hint">One per line</span><textarea id="certificationsInput" rows="8"></textarea></label></section>
       </form>
 
-      <section class="export-card">
-        <div><div class="eyebrow">READY WHEN YOU ARE</div><h2>Export your verified profile</h2><p>JSON works with the ResumeFill AI Chrome extension. CSV gives you a portable copy.</p></div>
-        <div class="export-actions"><button class="button primary" id="downloadJson" type="button">Download JSON</button><button class="button secondary" id="downloadCsv" type="button">Download CSV</button></div>
-      </section>
+      <section class="export-card"><div><div class="eyebrow">READY WHEN YOU ARE</div><h2>Export your verified profile</h2><p>JSON works with the ResumeFill AI Chrome extension. CSV gives you a portable copy.</p></div><div class="export-actions"><button class="button primary" id="downloadJson" type="button">Download JSON</button><button class="button secondary" id="downloadCsv" type="button">Download CSV</button></div></section>
     </section>
   </main>
 
