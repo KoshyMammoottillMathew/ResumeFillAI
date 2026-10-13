@@ -5,11 +5,17 @@ import { profileToCsv, downloadText } from './exporter.js';
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 const uploadView = $('#uploadView');
+const ocrView = $('#ocrView');
 const workspace = $('#workspace');
 const fileInput = $('#resumeFile');
 const dropzone = $('#dropzone');
 const status = $('#uploadStatus');
 const form = $('#profileForm');
+const privacyPill = $('#privacyPill');
+const privacyText = $('#privacyText');
+const ocrFile = $('#ocrFile');
+const ocrFileInfo = $('#ocrFileInfo');
+const ocrStatus = $('#ocrStatus');
 let profile = emptyProfile();
 
 const configs = {
@@ -20,13 +26,45 @@ const configs = {
 
 function setStatus(message, kind='') { status.textContent = message; status.className = `status ${kind}`; }
 function escapeHtml(value='') { return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function humanSize(bytes) { return bytes < 1024*1024 ? `${Math.max(1,Math.round(bytes/1024))} KB` : `${(bytes/(1024*1024)).toFixed(1)} MB`; }
+
+function setMode(mode) {
+  $$('.mode-button').forEach(button => button.classList.toggle('active', button.dataset.mode === mode));
+  if (mode === 'ocr') {
+    uploadView.classList.add('hidden'); workspace.classList.add('hidden'); ocrView.classList.remove('hidden');
+    privacyPill.classList.add('experimental'); privacyText.textContent = 'Advanced OCR prototype · backend not connected';
+  } else {
+    ocrView.classList.add('hidden');
+    if (profile.full_name || profile.email || profile.experience?.length || profile.education?.length) workspace.classList.remove('hidden'); else uploadView.classList.remove('hidden');
+    privacyPill.classList.remove('experimental'); privacyText.textContent = 'Your résumé stays in this browser';
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+$$('.mode-button').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+
+ocrFile.addEventListener('change', () => {
+  const file = ocrFile.files[0];
+  if (!file) { ocrFileInfo.classList.add('hidden'); return; }
+  const allowed = file.type === 'application/pdf' || ['image/png','image/jpeg'].includes(file.type) || /\.(pdf|png|jpe?g)$/i.test(file.name);
+  if (!allowed) {
+    ocrFile.value = ''; ocrFileInfo.classList.add('hidden'); ocrStatus.textContent = 'Choose a PDF, PNG or JPG document.'; ocrStatus.className = 'status compact error'; return;
+  }
+  if (file.size > 20*1024*1024) {
+    ocrFile.value = ''; ocrFileInfo.classList.add('hidden'); ocrStatus.textContent = 'This prototype limits prepared documents to 20 MB.'; ocrStatus.className = 'status compact error'; return;
+  }
+  ocrFileInfo.innerHTML = `<strong>${escapeHtml(file.name)}</strong><span>${humanSize(file.size)} · ${escapeHtml(file.type || 'document')}</span>`;
+  ocrFileInfo.classList.remove('hidden');
+  ocrStatus.textContent = 'Document prepared locally. It has not been uploaded. GPU inference will be enabled only after a backend and explicit consent flow are connected.';
+  ocrStatus.className = 'status compact success';
+});
 
 async function processFile(file) {
   if (!file) return;
   setStatus('Reading your PDF locally…');
   try {
     const text = await extractTextFromPdf(file);
-    if (!text.trim()) throw new Error('No readable text was found. Scanned/image-only PDFs are not supported yet.');
+    if (!text.trim()) throw new Error('No readable text was found. Try the Advanced OCR prototype for scanned/image-only documents.');
     setStatus('Structuring your résumé…');
     profile = extractProfile(text);
     renderProfile();
