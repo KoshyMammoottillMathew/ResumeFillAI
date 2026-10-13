@@ -1,8 +1,10 @@
 # ResumeFill AI
 
-**Privacy-first résumé extraction and job application autofill — entirely in the browser.**
+**Privacy-first résumé extraction and job application autofill — with an experimental Advanced OCR lab.**
 
-ResumeFill AI converts a text-based PDF résumé into a structured, editable profile. The web app runs as static HTML/CSS/JavaScript: the résumé is read locally in the browser and is not uploaded to a ResumeFill AI backend. After review, users can export JSON for the companion Chrome extension or CSV for their own records.
+ResumeFill AI converts a text-based PDF résumé into a structured, editable profile. The default web app runs as static HTML/CSS/JavaScript: the résumé is read locally in the browser and is not uploaded to a ResumeFill AI backend. After review, users can export JSON for the companion Chrome extension or CSV for their own records.
+
+ResumeFill AI also includes an **Advanced OCR — Prototype** section for evaluating Baidu Unlimited-OCR on scanned, complex and multi-page résumés. The prototype is deliberately separated from the default local extractor because Unlimited-OCR requires a GPU inference environment that GitHub Pages cannot provide.
 
 ## Live app
 
@@ -10,21 +12,11 @@ ResumeFill AI converts a text-based PDF résumé into a structured, editable pro
 
 The application is published as part of Koshy's GitHub Pages site under the **Products** category. This repository remains the source repository for ResumeFill AI.
 
-## Why ResumeFill AI?
+## Two processing modes
 
-Repeatedly entering the same contact details, skills, education and work history into job forms is slow and error-prone. ResumeFill AI creates one verified profile that can be reused while keeping the applicant in control.
+### Resume Extractor — local
 
-## Privacy by design
-
-- PDF parsing happens in the browser.
-- There is no ResumeFill AI application server or résumé database.
-- The app does not intentionally upload or persist the selected PDF.
-- Exported files are created locally in the browser.
-- The Chrome extension stores an imported profile in `chrome.storage.local`.
-- The extension never auto-submits a job application.
-- The app loads the pinned PDF.js library from a public CDN; the résumé itself is provided directly to PDF.js in the browser.
-
-## Browser app flow
+The default mode is browser-only and privacy-first.
 
 ```text
 PDF résumé
@@ -38,9 +30,45 @@ User review and correction
 JSON / CSV export
     ↓
 Chrome extension
-    ↓
-Supported job-form fields
 ```
+
+### Advanced OCR — prototype
+
+The experimental lab is designed for scanned résumés and difficult layouts.
+
+```text
+Scanned / complex résumé
+    ↓
+Explicit user consent
+    ↓
+Separate GPU inference environment
+    ↓
+Unlimited-OCR document parsing
+    ↓
+ResumeFill field mapping
+    ↓
+Human verification
+    ↓
+JSON / CSV export
+```
+
+**Current prototype status:** the interface and local document preparation flow are implemented, but no external inference backend is connected. Selecting a document in the Advanced OCR lab does not upload it. The run control remains disabled until a GPU backend, privacy policy and explicit consent flow are implemented.
+
+## Why ResumeFill AI?
+
+Repeatedly entering the same contact details, skills, education and work history into job forms is slow and error-prone. ResumeFill AI creates one verified profile that can be reused while keeping the applicant in control.
+
+## Privacy by design
+
+- Default PDF parsing happens in the browser.
+- There is no ResumeFill AI application server or résumé database for the standard extractor.
+- The app does not intentionally upload or persist the selected PDF in local mode.
+- Exported files are created locally in the browser.
+- The Chrome extension stores an imported profile in `chrome.storage.local`.
+- The extension never auto-submits a job application.
+- The app loads the pinned PDF.js library from a public CDN; the résumé itself is provided directly to PDF.js in the browser.
+- Advanced OCR is clearly separated because a future Unlimited-OCR backend would require external document processing.
+- Advanced OCR will require explicit consent before any future upload or inference request.
 
 ## Repository structure
 
@@ -63,11 +91,11 @@ ResumeFillAI/
 └── README.md
 ```
 
-## Current MVP
+## Current features
 
 - Drag-and-drop or choose a PDF résumé
 - Browser-side PDF text extraction
-- 10 MB / 25-page guardrails
+- 10 MB / 25-page local guardrails
 - Structured profile schema v1.0
 - Editable contact details and summary
 - Editable work experience and education
@@ -77,6 +105,9 @@ ResumeFillAI/
 - Chrome extension JSON import
 - Common job-form contact field autofill
 - No auto-submit
+- Advanced OCR prototype mode
+- PDF/PNG/JPG preparation for future Unlimited-OCR inference
+- Clear local-vs-external privacy distinction
 
 ## Profile schema
 
@@ -112,8 +143,10 @@ ResumeFillAI/
 
 ## Limitations
 
-- The current PDF extractor targets text-based PDFs; scanned/image-only PDFs need OCR and are not yet supported.
+- The default extractor targets text-based PDFs.
 - Résumé layouts vary widely, so extracted fields must always be reviewed.
+- Unlimited-OCR inference is not yet connected; the Advanced OCR section is currently a transparent integration prototype, not a working hosted OCR service.
+- A hosted Unlimited-OCR integration will change the privacy boundary and therefore requires explicit consent and clear data-handling documentation.
 - The extension currently focuses on common text inputs and textareas; complex ATS widgets, selects, radios and checkboxes need dedicated support.
 - ResumeFill AI is an assistive autofill tool, not an autonomous application bot.
 
@@ -126,8 +159,12 @@ ResumeFillAI/
 - [x] JSON and CSV export
 - [x] Chrome extension profile import
 - [x] Common contact-field autofill
-- [ ] Stronger multi-layout résumé parsing
-- [ ] OCR for scanned/image-only PDFs
+- [x] Advanced OCR prototype interface
+- [x] Local preparation of PDF/PNG/JPG for OCR experiments
+- [ ] Benchmark Unlimited-OCR on representative résumé layouts
+- [ ] Connect an opt-in GPU inference backend after privacy review
+- [ ] Map Unlimited-OCR output into ResumeFill schema
+- [ ] Stronger multi-layout local résumé parsing
 - [ ] Dropdown, radio and checkbox matching
 - [ ] Preview/confidence layer before autofill
 - [ ] ATS-specific adapters
